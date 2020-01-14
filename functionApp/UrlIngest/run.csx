@@ -7,7 +7,6 @@ using System.Linq;
 using System.Web;
 
 public static readonly string SHORTENER_URL = System.Environment.GetEnvironmentVariable("SHORTENER_URL");
-public static readonly string UTM_SOURCE = System.Environment.GetEnvironmentVariable("UTM_SOURCE");
 public static readonly string Alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
 public static readonly int Base = Alphabet.Length;
 
@@ -41,7 +40,7 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, NextId
         return req.CreateResponse(HttpStatusCode.NotFound);
     }
 
-    var result = new List<Result>();
+    Result result;
     var url = input.Input;
     
     if (String.IsNullOrWhiteSpace(url))
@@ -63,10 +62,7 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, NextId
     
     log.Info($"Current key: {keyTable.Id}"); 
     
-    if (tagSource) 
-    {
-        url = $"{url}?utm_source={UTM_SOURCE}";
-    }
+    
 
     
         var shortUrl = Encode(keyTable.Id++);
@@ -79,11 +75,11 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, NextId
         };
         var singleAdd = TableOperation.Insert(newUrl);
         await tableOut.ExecuteAsync(singleAdd);
-        result.Add(new Result 
+        result = new Result 
         {
             ShortUrl = $"{SHORTENER_URL}{newUrl.RowKey}",
             LongUrl = WebUtility.UrlDecode(newUrl.Url)
-        }); 
+        }; 
     
 
     var operation = TableOperation.Replace(keyTable);
