@@ -37,7 +37,7 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, NextId
 
     if (input == null)
     {
-        return req.CreateResponse(HttpStatusCode.NotFound);
+        return req.CreateResponse(HttpStatusCode.BadRequest);
     }
 
     Result result;
@@ -79,11 +79,15 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, NextId
         {
             ShortUrl = $"{SHORTENER_URL}{newUrl.RowKey}",
             LongUrl = WebUtility.UrlDecode(newUrl.Url)
-        }; 
+        };
+
+    log.Info($"ShortUrl saved.");
     
 
     var operation = TableOperation.Replace(keyTable);
     await tableOut.ExecuteAsync(operation);
+
+    log.Info($"Key saved.");
 
     log.Info($"Done.");
     return req.CreateResponse(HttpStatusCode.OK, result);
